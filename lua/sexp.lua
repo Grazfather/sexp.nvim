@@ -31,6 +31,9 @@ local function create_mappings(a, b)
     return nil
   end
 end
+local function DEFPLUG(modes, func, seq)
+  return vim.keymap.set(modes, ("<Plug>(" .. func .. ")"), seq)
+end
 local function create_autocmd()
   if (string.len(sexp_filetypes) ~= 0) then
     return vim.api.nvim_create_autocmd("FileType", {pattern = sexp_filetypes, group = vim.api.nvim_create_augroup("sexp-filetypes", {clear = true}), callback = create_mappings})
@@ -39,6 +42,26 @@ local function create_autocmd()
   end
 end
 local function setup(opts)
-  return create_autocmd()
+  create_autocmd()
+  DEFPLUG("x", "sexp_move_to_prev_bracket", "<Esc>:<C-u>call sexp#docount(v:prevcount, 'sexp#move_to_nearest_bracket', 'v', 0)<CR>")
+  DEFPLUG("x", "sexp_move_to_next_bracket", "<Esc>:<C-u>call sexp#docount(v:prevcount, 'sexp#move_to_nearest_bracket', 'v', 1)<CR>")
+  DEFPLUG("x", "sexp_move_to_prev_element_head", "<Esc>:<C-u>call sexp#move_to_adjacent_element('v', v:prevcount, 0, 0, 0)<CR>")
+  DEFPLUG("x", "sexp_move_to_next_element_head", "<Esc>:<C-u>call sexp#move_to_adjacent_element('v', v:prevcount, 1, 0, 0)<CR>")
+  DEFPLUG("x", "sexp_move_to_prev_element_tail", "<Esc>:<C-u>call sexp#move_to_adjacent_element('v', v:prevcount, 0, 1, 0)<CR>")
+  DEFPLUG("x", "sexp_move_to_next_element_tail", "<Esc>:<C-u>call sexp#move_to_adjacent_element('v', v:prevcount, 1, 1, 0)<CR>")
+  DEFPLUG("x", "sexp_flow_to_prev_close", "<Esc>:<C-u>call sexp#list_flow('v', v:prevcount, 0, 1)<CR>")
+  DEFPLUG("x", "sexp_flow_to_prev_open", "<Esc>:<C-u>call sexp#list_flow('v', v:prevcount, 0, 0)<CR>")
+  DEFPLUG("x", "sexp_flow_to_next_open", "<Esc>:<C-u>call sexp#list_flow('v', v:prevcount, 1, 0)<CR>")
+  DEFPLUG("x", "sexp_flow_to_next_close", "<Esc>:<C-u>call sexp#list_flow('v', v:prevcount, 1, 1)<CR>")
+  DEFPLUG("x", "sexp_flow_to_prev_leaf_head", "<Esc>:<C-u>call sexp#leaf_flow('v', v:prevcount, 0, 0)<CR>")
+  DEFPLUG("x", "sexp_flow_to_next_leaf_head", "<Esc>:<C-u>call sexp#leaf_flow('v', v:prevcount, 1, 0)<CR>")
+  DEFPLUG("x", "sexp_flow_to_prev_leaf_tail", "<Esc>:<C-u>call sexp#leaf_flow('v', v:prevcount, 0, 1)<CR>")
+  DEFPLUG("x", "sexp_flow_to_next_leaf_tail", "<Esc>:<C-u>call sexp#leaf_flow('v', v:prevcount, 1, 1)<CR>")
+  DEFPLUG("x", "sexp_move_to_prev_top_element", "<Esc>:<C-u>call sexp#move_to_adjacent_element('v', v:prevcount, 0, 0, 1)<CR>")
+  DEFPLUG("x", "sexp_move_to_next_top_element", "<Esc>:<C-u>call sexp#move_to_adjacent_element('v', v:prevcount, 1, 0, 1)<CR>")
+  DEFPLUG("x", "sexp_swap_list_forward", "<Esc>:<C-u>call sexp#docount(v:prevcount, 'sexp#swap_element', 'v', 1, 1)<CR>")
+  DEFPLUG("x", "sexp_swap_list_forward", "<Esc>:<C-u>call sexp#docount(v:prevcount, 'sexp#swap_element', 'v', 1, 1)<CR>")
+  DEFPLUG("x", "sexp_swap_element_backward", "<Esc>:<C-u>call sexp#docount(v:prevcount, 'sexp#swap_element', 'v', 0, 0)<CR>")
+  return DEFPLUG("x", "sexp_swap_element_forward", "<Esc>:<C-u>call sexp#docount(v:prevcount, 'sexp#swap_element', 'v', 1, 0)<CR>")
 end
 return {setup = setup}
