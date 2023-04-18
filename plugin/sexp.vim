@@ -19,10 +19,6 @@ let g:sexp_loaded = 1
 
 """ Global State {{{1
 
-if !exists('g:sexp_filetypes')
-    let g:sexp_filetypes = 'clojure,scheme,lisp,timl'
-endif
-
 if !exists('g:sexp_enable_insert_mode_mappings')
     let g:sexp_enable_insert_mode_mappings = 1
 endif
@@ -92,12 +88,6 @@ let s:sexp_mappings = {
     \ 'sexp_capture_next_element':      '<M-S-l>',
     \ }
 
-if !empty(g:sexp_filetypes)
-    augroup sexp_filetypes
-        autocmd!
-        execute 'autocmd FileType ' . g:sexp_filetypes . ' call s:sexp_create_mappings()'
-    augroup END
-endif
 
 " Autoload and detect repeat.vim
 silent! call repeat#set('')
@@ -204,7 +194,7 @@ function! s:sexp_create_mappings()
 
     for plug in ['sexp_indent',              'sexp_indent_top',
                \ 'sexp_insert_at_list_head', 'sexp_insert_at_list_tail',
-	       \ 'sexp_convolute',           'sexp_splice_list']
+               \ 'sexp_convolute',           'sexp_splice_list']
         let lhs = get(g:sexp_mappings, plug, s:sexp_mappings[plug])
         if !empty(lhs)
             execute 'nmap <silent><buffer> ' . lhs . ' <Plug>(' . plug . ')'
@@ -438,3 +428,9 @@ inoremap <silent><expr> <Plug>(sexp_insert_backspace) sexp#backspace_insertion()
 delcommand DefplugN
 delcommand Defplug
 delcommand DEFPLUG
+
+
+""" Export
+function! sexp#sexp_create_mappings()
+	return s:sexp_create_mappings()
+endfunction
