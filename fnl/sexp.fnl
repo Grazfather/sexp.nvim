@@ -69,6 +69,8 @@
                     "sexp_capture_prev_element"      "<M-S-h>"
                     "sexp_capture_next_element"      "<M-S-l>"})
 (var enable_insert_mode_mappings true)
+; Detect repeat.vim
+(local have-repeat-set (vim.fn.exists "repeat#set"))
 
 (fn imapexpr [lhs rhs]
   (vim.keymap.set :i lhs rhs {:replace_keycodes false :expr true}))
@@ -123,8 +125,50 @@
     (vim.keymap.set :i "\"" "<Plug>(sexp_insert_double_quote)" {:buffer 0})
     (vim.keymap.set :i "<BS>" "<Plug>(sexp_insert_backspace)" {:buffer 0})))
 
-(fn DEFPLUG [modes func seq]
+(fn build-prefix [jump opmode]
+  (.. ":<C-u>let b:sexp_count = v:count \\| "
+      (if jump
+        (.. "execute \"normal! " (if opmode "vv" "") "m`\" \\| ")
+        "")))
+
+(fn defplug [mode func expr repeat jump]
+  (let [lhs (.. mode "noremap <silent> <Plug>(" func ")")
+        opmode (= (string.sub mode 1 1) "o")
+        prefix (build-prefix jump opmode)
+        prefix (.. prefix "call " expr)
+        repeat true]
+        ; repeat (and repeat have-repeat-set)]
+
+    (case [repeat opmode]
+      [false _] (vim.api.nvim_command (.. lhs " " prefix "<CR>"))
+      [true true] (vim.api.nvim_command (.. lhs " " prefix " \\| "
+                                            "if v:operator ==? \"c\" \\| "
+                                            "  call sexp#repeat_set(v:operator . \"\\<Plug>(" func ")\\<lt>C-r>.\\<lt>C-Bslash>\\<lt>C-n>\", b:sexp_count) \\| "
+                                            "else \\| "
+                                            "  call sexp#repeat_set(v:operator . \"\\<Plug>(" func ")\", b:sexp_count) \\| "
+                                            "endif<CR>"))
+      _ (vim.api.nvim_command (.. lhs " " prefix " \\| call sexp#repeat_set(\"\\<Plug>(" func ")\", b:sexp_count)<CR>")))
+    ))
+
+; 000: RHS as key press sequence
+(fn defplug000 [modes func seq]
   (vim.keymap.set modes (.. "<Plug>(" func ")") seq))
+
+; 100: RHS as expression, no repeat, jump
+(fn defplug100 [mode func expr]
+  (defplug mode func expr false true))
+
+; 110: RHS as expression, repeat, jump
+(fn defplug110 [mode func expr]
+  (defplug mode func expr true true))
+
+; 101: RHS as expression, no repeat, no jump
+(fn defplug101 [mode func expr]
+  (defplug mode func expr false false))
+
+; 111: RHS as expression, repeat, no jump
+(fn defplug111 [mode func expr]
+  (defplug mode func expr true false))
 
 (fn create-autocmd []
   ; Setup autocommand to create mappings for each sexp filetype
@@ -140,61 +184,187 @@
   ; TODO: Merge opts in
   (create-autocmd)
 
-  ; Nearest bracket
-  (DEFPLUG :x "sexp_move_to_prev_bracket"
-           "<Esc>:<C-u>call sexp#docount(v:prevcount, 'sexp#move_to_nearest_bracket', 'v', 0)<CR>")
-  (DEFPLUG :x "sexp_move_to_next_bracket"
-           "<Esc>:<C-u>call sexp#docount(v:prevcount, 'sexp#move_to_nearest_bracket', 'v', 1)<CR>")
+  ; Text Object Selections
+  ; -- Current List (compount FORM)
+  (defplug100 :x "sexp_outer_list" "sexp#docount(b:sexp_count, 'sexp#select_current_list', 'v', 0, 1)")
+  (defplug110 :o "sexp_outer_list" "sexp#docount(b:sexp_count, 'sexp#select_current_list', 'o', 0, 1)")
+  (defplug100 :x "sexp_inner_list" "sexp#docount(b:sexp_count, 'sexp#select_current_list', 'v', 1, 1)")
+  (defplug110 :o "sexp_inner_list" "sexp#docount(b:sexp_count, 'sexp#select_current_list', 'o', 1, 1)")
 
-  ; Adjacent element head
-  (DEFPLUG :x "sexp_move_to_prev_element_head"
-           "<Esc>:<C-u>call sexp#move_to_adjacent_element('v', v:prevcount, 0, 0, 0)<CR>")
-  (DEFPLUG :x "sexp_move_to_next_element_head"
-           "<Esc>:<C-u>call sexp#move_to_adjacent_element('v', v:prevcount, 1, 0, 0)<CR>")
+  ; -- Current top-level list (compound FORM)
+  (defplug100 :x "sexp_outer_top_list" "sexp#select_current_top_list('v', 0)")
+  (defplug110 :o "sexp_outer_top_list" "sexp#select_current_top_list('o', 0)")
+  (defplug100 :x "sexp_inner_top_list" "sexp#select_current_top_list('v', 1)")
+  (defplug110 :o "sexp_inner_top_list" "sexp#select_current_top_list('o', 1)")
 
-  ; Adjacent element tail
-  (DEFPLUG :x "sexp_move_to_prev_element_tail"
-           "<Esc>:<C-u>call sexp#move_to_adjacent_element('v', v:prevcount, 0, 1, 0)<CR>")
-  (DEFPLUG :x "sexp_move_to_next_element_tail"
-           "<Esc>:<C-u>call sexp#move_to_adjacent_element('v', v:prevcount, 1, 1, 0)<CR>")
+  ; -- Current string
+  (defplug100 :x "sexp_outer_string" "sexp#select_current_string('v', 0)")
+  (defplug110 :o "sexp_outer_string" "sexp#select_current_string('o', 0)")
+  (defplug100 :x "sexp_inner_string" "sexp#select_current_string('v', 1)")
+  (defplug110 :o "sexp_inner_string" "sexp#select_current_string('o', 1)")
 
-  ; List flow commands
-  (DEFPLUG :x "sexp_flow_to_prev_close"
-           "<Esc>:<C-u>call sexp#list_flow('v', v:prevcount, 0, 1)<CR>")
-  (DEFPLUG :x "sexp_flow_to_prev_open"
-           "<Esc>:<C-u>call sexp#list_flow('v', v:prevcount, 0, 0)<CR>")
-  (DEFPLUG :x "sexp_flow_to_next_open"
-           "<Esc>:<C-u>call sexp#list_flow('v', v:prevcount, 1, 0)<CR>")
-  (DEFPLUG :x "sexp_flow_to_next_close"
-           "<Esc>:<C-u>call sexp#list_flow('v', v:prevcount, 1, 1)<CR>")
+  ; -- Current element
+  (defplug100 :x "sexp_outer_element" "sexp#select_current_element('v', 0)")
+  (defplug110 :o "sexp_outer_element" "sexp#select_current_element('o', 0)")
+  (defplug100 :x "sexp_inner_element" "sexp#select_current_element('v', 1)")
+  (defplug110 :o "sexp_inner_element" "sexp#select_current_element('o', 1)")
 
-  ; Leaf flow commands
-  (DEFPLUG :x "sexp_flow_to_prev_leaf_head"
-           "<Esc>:<C-u>call sexp#leaf_flow('v', v:prevcount, 0, 0)<CR>")
-  (DEFPLUG :x "sexp_flow_to_next_leaf_head"
-           "<Esc>:<C-u>call sexp#leaf_flow('v', v:prevcount, 1, 0)<CR>")
-  (DEFPLUG :x "sexp_flow_to_prev_leaf_tail"
-           "<Esc>:<C-u>call sexp#leaf_flow('v', v:prevcount, 0, 1)<CR>")
-  (DEFPLUG :x "sexp_flow_to_next_leaf_tail"
-           "<Esc>:<C-u>call sexp#leaf_flow('v', v:prevcount, 1, 1)<CR>")
+  ; Text Object Motions {{{1
+  ; -- Nearest bracket
+  (defplug100 :n "sexp_move_to_prev_bracket" "sexp#docount(b:sexp_count, 'sexp#move_to_nearest_bracket', 'n', 0)")
+  (defplug000 :x "sexp_move_to_prev_bracket"
+    "<Esc>:<C-u>call sexp#docount(v:prevcount, 'sexp#move_to_nearest_bracket', 'v', 0)<CR>")
+  (defplug110 :o "sexp_move_to_prev_bracket" "sexp#move_to_nearest_bracket('o', 0)")
+  (defplug100 :n "sexp_move_to_next_bracket" "sexp#docount(b:sexp_count, 'sexp#move_to_nearest_bracket', 'n', 1)")
+  (defplug000 :x "sexp_move_to_next_bracket"
+    "<Esc>:<C-u>call sexp#docount(v:prevcount, 'sexp#move_to_nearest_bracket', 'v', 1)<CR>")
+  (defplug110 :o "sexp_move_to_next_bracket" "sexp#move_to_nearest_bracket('o', 1)")
 
-  ; Adjacent top element
-  (DEFPLUG :x "sexp_move_to_prev_top_element"
-           "<Esc>:<C-u>call sexp#move_to_adjacent_element('v', v:prevcount, 0, 0, 1)<CR>")
-  (DEFPLUG :x "sexp_move_to_next_top_element"
-         "<Esc>:<C-u>call sexp#move_to_adjacent_element('v', v:prevcount, 1, 0, 1)<CR>")
+  ; -- Adjacent element head
+  ; Visual mappings must break out of visual mode in order to detect which end
+  ;the user is using to adjust the selection.
+  (defplug101 :n "sexp_move_to_prev_element_head" "sexp#move_to_adjacent_element('n', b:sexp_count, 0, 0, 0)")
+  (defplug000 :x "sexp_move_to_prev_element_head"
+    "<Esc>:<C-u>call sexp#move_to_adjacent_element('v', v:prevcount, 0, 0, 0)<CR>")
+  (defplug111 :o "sexp_move_to_prev_element_head" "sexp#move_to_adjacent_element('o', b:sexp_count, 0, 0, 0)")
+  (defplug101 :n "sexp_move_to_next_element_head" "sexp#move_to_adjacent_element('n', b:sexp_count, 1, 0, 0)")
+  (defplug000 :x "sexp_move_to_next_element_head"
+    "<Esc>:<C-u>call sexp#move_to_adjacent_element('v', v:prevcount, 1, 0, 0)<CR>")
+  (defplug111 :o "sexp_move_to_next_element_head" "sexp#move_to_adjacent_element('o', b:sexp_count, 1, 0, 0)")
 
-  ; Swap list
-  (DEFPLUG :x "sexp_swap_list_forward"
-           "<Esc>:<C-u>call sexp#docount(v:prevcount, 'sexp#swap_element', 'v', 1, 1)<CR>")
-  (DEFPLUG :x "sexp_swap_list_forward"
-           "<Esc>:<C-u>call sexp#docount(v:prevcount, 'sexp#swap_element', 'v', 1, 1)<CR>")
+  ; -- Adjacent element tail
+  ; Inclusive operator pending motions require a visual mode selection to
+  ; include the last character of a line.
+  (defplug101 :n "sexp_move_to_prev_element_tail" "sexp#move_to_adjacent_element('n', b:sexp_count, 0, 1, 0)")
+  (defplug000 :x "sexp_move_to_prev_element_tail"
+    "<Esc>:<C-u>call sexp#move_to_adjacent_element('v', v:prevcount, 0, 1, 0)<CR>")
+  (defplug111 :o "sexp_move_to_prev_element_tail" "sexp#move_to_adjacent_element('o', b:sexp_count, 0, 1, 0)")
+  (defplug101 :n "sexp_move_to_next_element_tail" "sexp#move_to_adjacent_element('n', b:sexp_count, 1, 1, 0)")
+  (defplug000 :x "sexp_move_to_next_element_tail"
+    "<Esc>:<C-u>call sexp#move_to_adjacent_element('v', v:prevcount, 1, 1, 0)<CR>")
+  (defplug111 :o "sexp_move_to_next_element_tail" "sexp#move_to_adjacent_element('o', b:sexp_count, 1, 1, 0)")
 
-  ; Swap element
-  (DEFPLUG :x "sexp_swap_element_backward"
-           "<Esc>:<C-u>call sexp#docount(v:prevcount, 'sexp#swap_element', 'v', 0, 0)<CR>")
-  (DEFPLUG :x "sexp_swap_element_forward"
-           "<Esc>:<C-u>call sexp#docount(v:prevcount, 'sexp#swap_element', 'v', 1, 0)<CR>")
+  ; -- List flow commands
+  (defplug100  :n "sexp_flow_to_prev_close" "sexp#list_flow('n', b:sexp_count, 0, 1)")
+  (defplug000 :x "sexp_flow_to_prev_close"
+    "<Esc>:<C-u>call sexp#list_flow('v', v:prevcount, 0, 1)<CR>")
+  (defplug100  :n "sexp_flow_to_prev_open" "sexp#list_flow('n', b:sexp_count, 0, 0)")
+  (defplug000 :x "sexp_flow_to_prev_open"
+    "<Esc>:<C-u>call sexp#list_flow('v', v:prevcount, 0, 0)<CR>")
+  (defplug100  :n "sexp_flow_to_next_open" "sexp#list_flow('n', b:sexp_count, 1, 0)")
+  (defplug000 :x "sexp_flow_to_next_open"
+    "<Esc>:<C-u>call sexp#list_flow('v', v:prevcount, 1, 0)<CR>")
+  (defplug100  :n "sexp_flow_to_next_close" "sexp#list_flow('n', b:sexp_count, 1, 1)")
+  (defplug000 :x "sexp_flow_to_next_close"
+    "<Esc>:<C-u>call sexp#list_flow('v', v:prevcount, 1, 1)<CR>")
+
+  ; -- Leaf flow commands
+  (defplug101 :n "sexp_flow_to_prev_leaf_head" "sexp#leaf_flow('n', b:sexp_count, 0, 0)")
+  (defplug000 :x "sexp_flow_to_prev_leaf_head"
+    "<Esc>:<C-u>call sexp#leaf_flow('v', v:prevcount, 0, 0)<CR>")
+  (defplug101 :n "sexp_flow_to_next_leaf_head" "sexp#leaf_flow('n', b:sexp_count, 1, 0)")
+  (defplug000 :x "sexp_flow_to_next_leaf_head"
+    "<Esc>:<C-u>call sexp#leaf_flow('v', v:prevcount, 1, 0)<CR>")
+  (defplug101 :n "sexp_flow_to_prev_leaf_tail" "sexp#leaf_flow('n', b:sexp_count, 0, 1)")
+  (defplug000 :x "sexp_flow_to_prev_leaf_tail"
+    "<Esc>:<C-u>call sexp#leaf_flow('v', v:prevcount, 0, 1)<CR>")
+  (defplug101 :n "sexp_flow_to_next_leaf_tail" "sexp#leaf_flow('n', b:sexp_count, 1, 1)")
+  (defplug000 :x "sexp_flow_to_next_leaf_tail"
+    "<Esc>:<C-u>call sexp#leaf_flow('v', v:prevcount, 1, 1)<CR>")
+
+  ; -- Adjacent top element
+  (defplug100 :n "sexp_move_to_prev_top_element" "sexp#move_to_adjacent_element('n', b:sexp_count, 0, 0, 1)")
+  (defplug000 :x "sexp_move_to_prev_top_element"
+    "<Esc>:<C-u>call sexp#move_to_adjacent_element('v', v:prevcount, 0, 0, 1)<CR>")
+  (defplug110 :o "sexp_move_to_prev_top_element" "sexp#move_to_adjacent_element('o', b:sexp_count, 0, 0, 1)")
+  (defplug100 :n "sexp_move_to_next_top_element" "sexp#move_to_adjacent_element('n', b:sexp_count, 1, 0, 1)")
+  (defplug000 :x "sexp_move_to_next_top_element"
+    "<Esc>:<C-u>call sexp#move_to_adjacent_element('v', v:prevcount, 1, 0, 1)<CR>")
+  (defplug110 :o "sexp_move_to_next_top_element" "sexp#move_to_adjacent_element('o', b:sexp_count, 1, 0, 1)")
+
+  ; -- Adjacent element selection
+  ; Unlike the other directional motions, calling this from normal mode places
+  ; us in visual mode, with the adjacent element as our selection.
+  (defplug100 :n "sexp_select_prev_element" "sexp#docount(b:sexp_count, 'sexp#select_adjacent_element', 'n', 0)")
+  (defplug100 :x "sexp_select_prev_element" "sexp#docount(b:sexp_count, 'sexp#select_adjacent_element', 'v', 0)")
+  (defplug110 :o "sexp_select_prev_element" "sexp#docount(b:sexp_count, 'sexp#select_adjacent_element', 'o', 0)")
+  (defplug100 :n "sexp_select_next_element" "sexp#docount(b:sexp_count, 'sexp#select_adjacent_element', 'n', 1)")
+  (defplug100 :x "sexp_select_next_element" "sexp#docount(b:sexp_count, 'sexp#select_adjacent_element', 'v', 1)")
+  (defplug110 :o "sexp_select_next_element" "sexp#docount(b:sexp_count, 'sexp#select_adjacent_element', 'o', 1)")
+
+  ; Commands
+  ; -- Indent S-Expression
+  (defplug110 :n "sexp_indent"     "sexp#indent(0, b:sexp_count)")
+  (defplug110 :n "sexp_indent_top" "sexp#indent(1, b:sexp_count)")
+
+  ; -- Wrap list
+  (defplug110 :n "sexp_round_head_wrap_list"  "sexp#wrap('f', '(', ')', 0, g:sexp_insert_after_wrap)")
+  (defplug100 :x "sexp_round_head_wrap_list"  "sexp#wrap('v', '(', ')', 0, g:sexp_insert_after_wrap)")
+  (defplug110 :n "sexp_round_tail_wrap_list"  "sexp#wrap('f', '(', ')', 1, g:sexp_insert_after_wrap)")
+  (defplug100 :x "sexp_round_tail_wrap_list"  "sexp#wrap('v', '(', ')', 1, g:sexp_insert_after_wrap)")
+  (defplug110 :n "sexp_square_head_wrap_list" "sexp#wrap('f', '[', ']', 0, g:sexp_insert_after_wrap)")
+  (defplug100 :x "sexp_square_head_wrap_list" "sexp#wrap('v', '[', ']', 0, g:sexp_insert_after_wrap)")
+  (defplug110 :n "sexp_square_tail_wrap_list" "sexp#wrap('f', '[', ']', 1, g:sexp_insert_after_wrap)")
+  (defplug100 :x "sexp_square_tail_wrap_list" "sexp#wrap('v', '[', ']', 1, g:sexp_insert_after_wrap)")
+  (defplug110 :n "sexp_curly_head_wrap_list"  "sexp#wrap('f', '{', '}', 0, g:sexp_insert_after_wrap)")
+  (defplug100 :x "sexp_curly_head_wrap_list"  "sexp#wrap('v', '{', '}', 0, g:sexp_insert_after_wrap)")
+  (defplug110 :n "sexp_curly_tail_wrap_list"  "sexp#wrap('f', '{', '}', 1, g:sexp_insert_after_wrap)")
+  (defplug100 :x "sexp_curly_tail_wrap_list"  "sexp#wrap('v', '{', '}', 1, g:sexp_insert_after_wrap)")
+
+  ; -- Wrap element
+  (defplug110 :n "sexp_round_head_wrap_element"  "sexp#wrap('e', '(', ')', 0, g:sexp_insert_after_wrap)")
+  (defplug100 :x "sexp_round_head_wrap_element"  "sexp#wrap('v', '(', ')', 0, g:sexp_insert_after_wrap)")
+  (defplug110 :n "sexp_round_tail_wrap_element"  "sexp#wrap('e', '(', ')', 1, g:sexp_insert_after_wrap)")
+  (defplug100 :x "sexp_round_tail_wrap_element"  "sexp#wrap('v', '(', ')', 1, g:sexp_insert_after_wrap)")
+  (defplug110 :n "sexp_square_head_wrap_element" "sexp#wrap('e', '[', ']', 0, g:sexp_insert_after_wrap)")
+  (defplug100 :x "sexp_square_head_wrap_element" "sexp#wrap('v', '[', ']', 0, g:sexp_insert_after_wrap)")
+  (defplug110 :n "sexp_square_tail_wrap_element" "sexp#wrap('e', '[', ']', 1, g:sexp_insert_after_wrap)")
+  (defplug100 :x "sexp_square_tail_wrap_element" "sexp#wrap('v', '[', ']', 1, g:sexp_insert_after_wrap)")
+  (defplug110 :n "sexp_curly_head_wrap_element"  "sexp#wrap('e', '{', '}', 0, g:sexp_insert_after_wrap)")
+  (defplug100 :x "sexp_curly_head_wrap_element"  "sexp#wrap('v', '{', '}', 0, g:sexp_insert_after_wrap)")
+  (defplug110 :n "sexp_curly_tail_wrap_element"  "sexp#wrap('e', '{', '}', 1, g:sexp_insert_after_wrap)")
+  (defplug100 :x "sexp_curly_tail_wrap_element"  "sexp#wrap('v', '{', '}', 1, g:sexp_insert_after_wrap)")
+
+  ; -- Insert at list terminal
+  (defplug110 :n "sexp_insert_at_list_head" "sexp#insert_at_list_terminal(0)")
+  (defplug110 :n "sexp_insert_at_list_tail" "sexp#insert_at_list_terminal(1)")
+
+  ; -- Raise list
+  (defplug110 :n "sexp_raise_list"    "sexp#docount(b:sexp_count, 'sexp#raise', 'n', 'sexp#select_current_list', 'n', 0, 0)")
+  (defplug100 :x "sexp_raise_list"    "sexp#docount(b:sexp_count, 'sexp#raise', 'v', '')")
+  (defplug110 :n "sexp_raise_element" "sexp#docount(b:sexp_count, 'sexp#raise', 'n', 'sexp#select_current_element', 'n', 1)")
+  (defplug100 :x "sexp_raise_element" "sexp#docount(b:sexp_count, 'sexp#raise', 'v', '')")
+
+  ; -- Convolute
+  ; Note: convolute takes pains to preserve cursor position: hence, 'nojump'.
+  (defplug111 :n "sexp_convolute" "sexp#convolute(b:sexp_count, 'n')")
+
+  ; -- Splice list
+  (defplug110 :n "sexp_splice_list" "sexp#splice_list(b:sexp_count)")
+
+  ; -- Swap list
+  (defplug110 :n "sexp_swap_list_backward" "sexp#docount(b:sexp_count, 'sexp#swap_element', 'n', 0, 1)")
+  (defplug110 :n "sexp_swap_list_forward"  "sexp#docount(b:sexp_count, 'sexp#swap_element', 'n', 1, 1)")
+  (defplug000 :x "sexp_swap_list_forward"
+    "<Esc>:<C-u>call sexp#docount(v:prevcount, 'sexp#swap_element', 'v', 1, 1)<CR>")
+
+  ; -- Swap element
+  (defplug110 :n "sexp_swap_element_backward" "sexp#docount(b:sexp_count, 'sexp#swap_element', 'n', 0, 0)")
+  (defplug000 :x "sexp_swap_element_backward"
+    "<Esc>:<C-u>call sexp#docount(v:prevcount, 'sexp#swap_element', 'v', 0, 0)<CR>")
+  (defplug110 :n "sexp_swap_element_forward"  "sexp#docount(b:sexp_count, 'sexp#swap_element', 'n', 1, 0)")
+  (defplug000 :x "sexp_swap_element_forward"
+    "<Esc>:<C-u>call sexp#docount(v:prevcount, 'sexp#swap_element', 'v', 1, 0)<CR>")
+
+  ; -- Emit/capture element
+  (defplug110 :n "sexp_emit_head_element"    "sexp#docount(b:sexp_count, 'sexp#stackop', 'n', 0, 0)")
+  (defplug100 :x "sexp_emit_head_element"    "sexp#docount(b:sexp_count, 'sexp#stackop', 'v', 0, 0)")
+  (defplug110 :n "sexp_emit_tail_element"    "sexp#docount(b:sexp_count, 'sexp#stackop', 'n', 1, 0)")
+  (defplug100 :x "sexp_emit_tail_element"    "sexp#docount(b:sexp_count, 'sexp#stackop', 'v', 1, 0)")
+  (defplug110 :n "sexp_capture_prev_element" "sexp#docount(b:sexp_count, 'sexp#stackop', 'n', 0, 1)")
+  (defplug100 :x "sexp_capture_prev_element" "sexp#docount(b:sexp_count, 'sexp#stackop', 'v', 0, 1)")
+  (defplug110 :n "sexp_capture_next_element" "sexp#docount(b:sexp_count, 'sexp#stackop', 'n', 1, 1)")
+  (defplug100 :x "sexp_capture_next_element" "sexp#docount(b:sexp_count, 'sexp#stackop', 'v', 1, 1)")
 
   ; Insert mode mappings
   ; -- Insert opening delimiter
@@ -209,10 +379,6 @@
   (imapexpr "<Plug>(sexp_insert_double_quote)" "sexp#quote_insertion('\"')")
   ; -- Delete paired delimiters
   (imapexpr "<Plug>(sexp_insert_backspace)" "sexp#backspace_insertion()")
-  )
+)
 
-{
- ; Temp exports
-
- ; Real exports
- : setup}
+{: setup}
