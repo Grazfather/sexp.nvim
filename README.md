@@ -1,24 +1,26 @@
 <pre>
-             o8o
-             '"'
- oooo    ooooooo ooo. .oo.  .oo.        .oooo.o  .ooooo. oooo    ooooo.ooooo.
-  `88.  .8' `888 `888P"Y88bP"Y88b      d88(  "8 d88' `88b `88b..8P'  888' `88b
-   `88..8'   888  888   888   888 8888 `"Y88b.  888ooo888   Y888'    888   888
-    `888'    888  888   888   888      o.  )88b 888    .o .o8"'88b   888   888
-     `8'    o888oo888o o888o o888o     8""888P' `Y8bod8P'o88'   888o 888bod8P'
-                                                                     888
-                                                                    o888o
+                                                                   o8o
+                                                                   '"'
+   .oooo.o  .ooooo. oooo    ooooo.ooooo.    ooo. .oo.  oooo    ooooooo ooo. .oo.  .oo.
+  d88(  "8 d88' `88b `88b..8P'  888' `88b   `888P"Y88b  `88.  .8' `888 `888P"Y88bP"Y88b
+  `"Y88b.  888ooo888   Y888'    888   888    888   888   `88..8'   888  888   888   888
+  o.  )88b 888    .o .o8"'88b   888   888    888   888    `888'    888  888   888   888
+  8""888P' `Y8bod8P'o88'   888o 888bod8P' o o888o o888o    `8'    o888oo888o o888o o888o
+                                888
+                               o888o
 </pre>
 
 ## Introduction
 
-Vim-sexp brings the Vim philosophy of _precision editing_ to S-expressions.
+sexp.nvim brings the Vim philosophy of _precision editing_ to S-expressions.
+
+This is a direct port (for now) of [vim-sexp](https://github.com/guns/vim-sexp) by guns.
 
 ## Requirements
 
-* Vim 7.3+
+* Neovim v0.8.0+
 
-* [vim-repeat][] (optional)
+* [vim-repeat](https://github.com/tpope/vim-repeat) (optional)
 
   Enables use of the `.` command for repeating change operations in vim-sexp,
   as well as repeating builtin operations with vim-sexp's text objects.
@@ -148,5 +150,4 @@ These insert mode mappings can be disabled with:
 let g:sexp_enable_insert_mode_mappings = 0
 ```
 
-[vim-repeat]: https://github.com/tpope/vim-repeat
 [paredit.el]: http://www.emacswiki.org/emacs/ParEdit
