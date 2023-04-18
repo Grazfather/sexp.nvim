@@ -12,17 +12,6 @@
 "  License:  MIT
 "  Homepage: https://github.com/guns/vim-sexp
 
-if exists('g:sexp_loaded')
-    finish
-endif
-let g:sexp_loaded = 1
-
-""" Global State {{{1
-
-if !exists('g:sexp_insert_after_wrap')
-    let g:sexp_insert_after_wrap = 1
-endif
-
 """ Functions {{{1
 
 
