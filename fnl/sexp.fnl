@@ -68,6 +68,7 @@
                     "sexp_emit_tail_element"         "<M-S-k>"
                     "sexp_capture_prev_element"      "<M-S-h>"
                     "sexp_capture_next_element"      "<M-S-l>"})
+(var enable_insert_mode_mappings true)
 
 (fn create-mappings [a b]
   (each [_ plug (ipairs ["sexp_outer_list"     "sexp_inner_list"
@@ -109,7 +110,7 @@
     (let [lhs (. sexp_mappings plug)]
       (vim.keymap.set [:n :x] lhs (.. "<Plug>(" plug ")") {:buffer 0})))
 
-  (when (vim.api.nvim_eval "g:sexp_enable_insert_mode_mappings")
+  (when enable_insert_mode_mappings
     (vim.keymap.set :i "(" "<Plug>(sexp_insert_opening_round)" {:buffer 0})
     (vim.keymap.set :i "[" "<Plug>(sexp_insert_opening_square)" {:buffer 0})
     (vim.keymap.set :i "{" "<Plug>(sexp_insert_opening_curly)" {:buffer 0})
