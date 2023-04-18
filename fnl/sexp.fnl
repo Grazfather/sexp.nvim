@@ -70,6 +70,9 @@
                     "sexp_capture_next_element"      "<M-S-l>"})
 (var enable_insert_mode_mappings true)
 
+(fn imapexpr [lhs rhs]
+  (vim.keymap.set :i lhs rhs {:replace_keycodes false :expr true}))
+
 (fn create-mappings [a b]
   (each [_ plug (ipairs ["sexp_outer_list"     "sexp_inner_list"
                          "sexp_outer_top_list" "sexp_inner_top_list"
@@ -192,8 +195,21 @@
            "<Esc>:<C-u>call sexp#docount(v:prevcount, 'sexp#swap_element', 'v', 0, 0)<CR>")
   (DEFPLUG :x "sexp_swap_element_forward"
            "<Esc>:<C-u>call sexp#docount(v:prevcount, 'sexp#swap_element', 'v', 1, 0)<CR>")
-  )
 
+  ; Insert mode mappings
+  ; -- Insert opening delimiter
+  (imapexpr "<Plug>(sexp_insert_opening_round)" "sexp#opening_insertion('(')")
+  (imapexpr "<Plug>(sexp_insert_opening_square)" "sexp#opening_insertion('[')")
+  (imapexpr "<Plug>(sexp_insert_opening_curly)" "sexp#opening_insertion('{')")
+  ; -- Insert closing delimiter
+  (imapexpr "<Plug>(sexp_insert_closing_round)" "sexp#closing_insertion(')')")
+  (imapexpr "<Plug>(sexp_insert_closing_square)" "sexp#closing_insertion(']')")
+  (imapexpr "<Plug>(sexp_insert_closing_curly)" "sexp#closing_insertion('}')")
+  ; -- Insert double quote
+  (imapexpr "<Plug>(sexp_insert_double_quote)" "sexp#quote_insertion('\"')")
+  ; -- Delete paired delimiters
+  (imapexpr "<Plug>(sexp_insert_backspace)" "sexp#backspace_insertion()")
+  )
 
 {
  ; Temp exports

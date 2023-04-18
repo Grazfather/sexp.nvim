@@ -261,24 +261,6 @@ Defplug  xnoremap sexp_capture_prev_element sexp#docount(v:count, 'sexp#stackop'
 Defplug! nnoremap sexp_capture_next_element sexp#docount(v:count, 'sexp#stackop', 'n', 1, 1)
 Defplug  xnoremap sexp_capture_next_element sexp#docount(v:count, 'sexp#stackop', 'v', 1, 1)
 
-""" Insert mode mappings {{{1
-
-" Insert opening delimiter
-inoremap <silent><expr> <Plug>(sexp_insert_opening_round)  sexp#opening_insertion('(')
-inoremap <silent><expr> <Plug>(sexp_insert_opening_square) sexp#opening_insertion('[')
-inoremap <silent><expr> <Plug>(sexp_insert_opening_curly)  sexp#opening_insertion('{')
-
-" Insert closing delimiter
-inoremap <silent><expr> <Plug>(sexp_insert_closing_round)  sexp#closing_insertion(')')
-inoremap <silent><expr> <Plug>(sexp_insert_closing_square) sexp#closing_insertion(']')
-inoremap <silent><expr> <Plug>(sexp_insert_closing_curly)  sexp#closing_insertion('}')
-
-" Insert double quote
-inoremap <silent><expr> <Plug>(sexp_insert_double_quote) sexp#quote_insertion('"')
-
-" Delete paired delimiters
-inoremap <silent><expr> <Plug>(sexp_insert_backspace) sexp#backspace_insertion()
-
 """ Cleanup {{{1
 
 delcommand DefplugN
