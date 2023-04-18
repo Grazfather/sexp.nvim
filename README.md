@@ -25,6 +25,50 @@ This is a direct port (for now) of [vim-sexp](https://github.com/guns/vim-sexp) 
   Enables use of the `.` command for repeating change operations in vim-sexp,
   as well as repeating builtin operations with vim-sexp's text objects.
 
+## Installation
+
+### [lazy.nvim](https://github.com/folke/lazy.nvim)
+
+```lua
+require("lazy").setup({
+  {
+    "Grazfather/sexp.nvim",
+    config = {
+      -- Your config goes here, or just set to true to use default settings
+    }
+  },
+})
+```
+
+### [packer](https://github.com/wbthomason/packer.nvim)
+
+```lua
+-- Lua
+use {
+  "Grazfather/sexp.nvim",
+  config = function()
+    require("which-key").setup {
+      -- Your config goes here, or just leave empty to use default settings
+    }
+  end
+}
+```
+
+## Configuration
+
+I wrote sexp.nvim mostly because I didn't like how annoying it was to configure
+vim-sexp. I've exposed the following options:
+
+```lua
+{
+
+	enable_insert_mode_mappings = true
+		insert_after_wrap = true
+		filetypes = "clojure,scheme,lisp,timl,fennel"
+		mappings = {} -- See below
+}
+```
+
 ## Definitions
 
 A COMPOUND FORM is a region of text delimited by a pair of `(` and `)`,
