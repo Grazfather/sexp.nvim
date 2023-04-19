@@ -14,7 +14,9 @@
 
 sexp.nvim brings the Vim philosophy of _precision editing_ to S-expressions.
 
-This is a direct port (for now) of [vim-sexp](https://github.com/guns/vim-sexp) by guns.
+This is a direct port (for now) of [vim-sexp](https://github.com/guns/vim-sexp)
+by guns. Most functionality is implemented in vim script, completely untouched
+from vim-sexp.
 
 ## Requirements
 
@@ -22,8 +24,8 @@ This is a direct port (for now) of [vim-sexp](https://github.com/guns/vim-sexp) 
 
 * [vim-repeat](https://github.com/tpope/vim-repeat) (optional)
 
-  Enables use of the `.` command for repeating change operations in vim-sexp,
-  as well as repeating builtin operations with vim-sexp's text objects.
+  Enables use of the `.` command for repeating change operations in sexp.nvim,
+  as well as repeating builtin operations with sexp.nvim's text objects.
 
 ## Installation
 
@@ -43,11 +45,10 @@ require("lazy").setup({
 ### [packer](https://github.com/wbthomason/packer.nvim)
 
 ```lua
--- Lua
 use {
   "Grazfather/sexp.nvim",
   config = function()
-    require("which-key").setup {
+    require("sexp").setup {
       -- Your config goes here, or just leave empty to use default settings
     }
   end
@@ -61,11 +62,10 @@ vim-sexp. I've exposed the following options:
 
 ```lua
 {
-
-	enable_insert_mode_mappings = true
-		insert_after_wrap = true
-		filetypes = "clojure,scheme,lisp,timl,fennel"
-		mappings = {} -- See below
+  enable_insert_mode_mappings = true,
+  insert_after_wrap = true,
+  filetypes = "clojure,scheme,lisp,timl,fennel",
+  mappings = {}, -- See below
 }
 ```
 
@@ -103,7 +103,7 @@ mapping is available as a `<Plug>` mapping, which may be used for any purpose.
 Users who desire more explicit, opt-in configuration should refer to
 `:help sexp-explicit-mappings`.
 
-Comprehensive documentation is available at `:help vim-sexp`. The following is
+Comprehensive documentation is available at `:help sexp.nvim`. The following is
 a brief summary.
 
 ### Text Object Selections (visual, operator-pending)
@@ -173,7 +173,7 @@ bracket so that any typed characters will be separated from the next element.
 
 ### Insert Mode Mappings (insert)
 
-Vim-sexp does intelligent bracket and double quote insertion like
+sexp.nvim does intelligent bracket and double quote insertion like
 [paredit.el][]. Unlike ParEdit, deletion of brackets that would cause an
 imbalance is not prevented, except in the limited case of `<BS>` below.
 

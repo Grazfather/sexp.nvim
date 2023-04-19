@@ -1,14 +1,14 @@
-*vim-sexp.txt*	Precision Editing for Symbolic Expressions
+sexp.nvim.txt*	Precision Editing for Symbolic Expressions
 
-            o8o
-            '"'
-oooo    ooooooo ooo. .oo.  .oo.        .oooo.o  .ooooo. oooo    ooooo.ooooo.
- `88.  .8' `888 `888P"Y88bP"Y88b      d88(  "8 d88' `88b `88b..8P'  888' `88b
-  `88..8'   888  888   888   888 8888 `"Y88b.  888ooo888   Y888'    888   888
-   `888'    888  888   888   888      o.  )88b 888    .o .o8"'88b   888   888
-    `8'    o888oo888o o888o o888o     8""888P' `Y8bod8P'o88'   888o 888bod8P'
-                                                                    888
-                                                                   o888o
+                                                                  o8o
+                                                                  '"'
+   .oooo.o  .ooooo. oooo    ooooo.ooooo.    ooo. .oo. oooo    ooooooo ooo. .oo.  .oo.
+  d88(  "8 d88' `88b `88b..8P'  888' `88b   `888P"Y88b `88.  .8' `888 `888P"Y88bP"Y88b
+  `"Y88b.  888ooo888   Y888'    888   888    888   888  `88..8'   888  888   888   888
+  o.  )88b 888    .o .o8"'88b   888   888    888   888   `888'    888  888   888   888
+  8""888P' `Y8bod8P'o88'   888o 888bod8P' o o888o o888o   `8'    o888oo888o o888o o888o
+                                888
+                               o888o
 
 ==============================================================================
 I. INTRODUCTION                                            *sexp-introduction*
@@ -29,7 +29,7 @@ paredit.el, are also provided.
 ==============================================================================
 II. MAPPINGS                                                   *sexp-mappings*
 
-This is the list of mappings provided by vim-sexp grouped by type. The default
+This is the list of mappings provided by sexp.nvim grouped by type. The default
 key mapping is shown on the left and the full <Plug> name on the right.
 
 Note that all actions that result in visual selections will always be
@@ -410,7 +410,7 @@ LIST MANIPULATION (normal, visual)~
         This convolute is very similar to the Emacs Paredit version, but in
         some cases a bit smarter. For instance, Paredit always divides the
         current list _at_ the cursor, even if this means doing something silly
-        (and potentially dangerous) like splitting an atom. Vim-sexp on the
+        (and potentially dangerous) like splitting an atom. sexp.nvim on the
         other hand always attempts to divide the current list at a sensible
         location: preferably at the head of the current element (or the
         subsequent one if cursor is in whitespace between elements).
@@ -515,107 +515,99 @@ INSERT MODE MAPPINGS (insert, optional)~
         Normal backspace otherwise.
 
 ==============================================================================
-III. OPTIONS                                                    *sexp-options*
+III. CONFIGURATION                                                *sexp-options*
 
-                                                            *g:sexp_filetypes*
+                                                                     *filetypes*
 A string representing an |autocmd-pattern| for the |FileType|s in which you
-wish to activate vim-sexp mappings.
+wish to activate sexp.nvim mappings.
 >
-        " Default
-        let g:sexp_filetypes = 'clojure,scheme,lisp,timl'
+        filetypes = "clojure,scheme,lisp,timl,fennel"
 <
-                                          *g:sexp_enable_insert_mode_mappings*
+                                                   *enable_insert_mode_mappings*
 Toggle insert mode mappings in |g:sexp_filetypes|.
 >
-        " Default
-        let g:sexp_enable_insert_mode_mappings = 1
+        enable_insert_mode_mappings = true
 <
-                                                    *g:sexp_insert_after_wrap*
+                                                             *insert_after_wrap*
 Enter insert mode (and append a space after the opening bracket when inserting
 at head) after using a wrap command like |<Plug>(sexp_round_head_wrap_list)|.
 >
-        " Default
-        let g:sexp_insert_after_wrap = 1
+        insert_after_wrap = true
 <
-                                                             *g:sexp_mappings*
-Dictionary of user vim-sexp mappings. Keys are the <Plug> names without
+                                                                      *mappings*
+Table of user sexp.nvim mappings. Keys are the <Plug> names without
 "<Plug>" or the surrounding parentheses, and the values are the key sequences
 you wish to bind to.
 
 This dictionary is merged over the dictionary of default mappings, so it is
 not necessary to copy all the entries to change a few.
 >
-        " Default
-        let g:sexp_mappings = {}
+        (var mappings {"sexp_outer_list"                "af"
+                       "sexp_inner_list"                "if"
+                       "sexp_outer_top_list"            "aF"
+                       "sexp_inner_top_list"            "iF"
+                       "sexp_outer_string"              "as"
+                       "sexp_inner_string"              "is"
+                       "sexp_outer_element"             "ae"
+                       "sexp_inner_element"             "ie"
+                       "sexp_move_to_prev_bracket"      "("
+                       "sexp_move_to_next_bracket"      ")"
+                       "sexp_move_to_prev_element_head" "<M-b>"
+                       "sexp_move_to_next_element_head" "<M-w>"
+                       "sexp_move_to_prev_element_tail" "g<M-e>"
+                       "sexp_move_to_next_element_tail" "<M-e>"
+                       "sexp_flow_to_prev_close"        "<M-[>"
+                       "sexp_flow_to_next_open"         "<M-]>"
+                       "sexp_flow_to_prev_open"         "<M-{>"
+                       "sexp_flow_to_next_close"        "<M-}>"
+                       "sexp_flow_to_prev_leaf_head"    "<M-S-b>"
+                       "sexp_flow_to_next_leaf_head"    "<M-S-w>"
+                       "sexp_flow_to_prev_leaf_tail"    "<M-S-g>"
+                       "sexp_flow_to_next_leaf_tail"    "<M-S-e>"
+                       "sexp_move_to_prev_top_element"  "[["
+                       "sexp_move_to_next_top_element"  "]]"
+                       "sexp_select_prev_element"       "[e"
+                       "sexp_select_next_element"       "]e"
+                       "sexp_indent"                    "=="
+                       "sexp_indent_top"                "=-"
+                       "sexp_round_head_wrap_list"      "<LocalLeader>i"
+                       "sexp_round_tail_wrap_list"      "<LocalLeader>I"
+                       "sexp_square_head_wrap_list"     "<LocalLeader>["
+                       "sexp_square_tail_wrap_list"     "<LocalLeader>]"
+                       "sexp_curly_head_wrap_list"      "<LocalLeader>{"
+                       "sexp_curly_tail_wrap_list"      "<LocalLeader>}"
+                       "sexp_round_head_wrap_element"   "<LocalLeader>w"
+                       "sexp_round_tail_wrap_element"   "<LocalLeader>W"
+                       "sexp_square_head_wrap_element"  "<LocalLeader>e["
+                       "sexp_square_tail_wrap_element"  "<LocalLeader>e]"
+                       "sexp_curly_head_wrap_element"   "<LocalLeader>e{"
+                       "sexp_curly_tail_wrap_element"   "<LocalLeader>e}"
+                       "sexp_insert_at_list_head"       "<LocalLeader>h"
+                       "sexp_insert_at_list_tail"       "<LocalLeader>l"
+                       "sexp_splice_list"               "<LocalLeader>@"
+                       "sexp_convolute"                 "<LocalLeader>?"
+                       "sexp_raise_list"                "<LocalLeader>o"
+                       "sexp_raise_element"             "<LocalLeader>O"
+                       "sexp_swap_list_backward"        "<M-k>"
+                       "sexp_swap_list_forward"         "<M-j>"
+                       "sexp_swap_element_backward"     "<M-h>"
+                       "sexp_swap_element_forward"      "<M-l>"
+                       "sexp_emit_head_element"         "<M-S-j>"
+                       "sexp_emit_tail_element"         "<M-S-k>"
+                       "sexp_capture_prev_element"      "<M-S-h>"
+                       "sexp_capture_next_element"      "<M-S-l>"})
 
-        " vim-sexp internal mappings
-        let s:sexp_mappings = {
-            \ 'sexp_outer_list':                'af',
-            \ 'sexp_inner_list':                'if',
-            \ 'sexp_outer_top_list':            'aF',
-            \ 'sexp_inner_top_list':            'iF',
-            \ 'sexp_outer_string':              'as',
-            \ 'sexp_inner_string':              'is',
-            \ 'sexp_outer_element':             'ae',
-            \ 'sexp_inner_element':             'ie',
-            \ 'sexp_move_to_prev_bracket':      '(',
-            \ 'sexp_move_to_next_bracket':      ')',
-            \ 'sexp_move_to_prev_element_head': '<M-b>',
-            \ 'sexp_move_to_next_element_head': '<M-w>',
-            \ 'sexp_move_to_prev_element_tail': 'g<M-e>',
-            \ 'sexp_move_to_next_element_tail': '<M-e>',
-            \ 'sexp_flow_to_prev_close':        '<M-[>',
-            \ 'sexp_flow_to_next_open':         '<M-]>',
-            \ 'sexp_flow_to_prev_open':         '<M-{>',
-            \ 'sexp_flow_to_next_close':        '<M-}>',
-            \ 'sexp_flow_to_prev_leaf_head':    '<M-S-b>',
-            \ 'sexp_flow_to_next_leaf_head':    '<M-S-w>',
-            \ 'sexp_flow_to_prev_leaf_tail':    '<M-S-g>',
-            \ 'sexp_flow_to_next_leaf_tail':    '<M-S-e>',
-            \ 'sexp_move_to_prev_top_element':  '[[',
-            \ 'sexp_move_to_next_top_element':  ']]',
-            \ 'sexp_select_prev_element':       '[e',
-            \ 'sexp_select_next_element':       ']e',
-            \ 'sexp_indent':                    '==',
-            \ 'sexp_indent_top':                '=-',
-            \ 'sexp_round_head_wrap_list':      '<LocalLeader>i',
-            \ 'sexp_round_tail_wrap_list':      '<LocalLeader>I',
-            \ 'sexp_square_head_wrap_list':     '<LocalLeader>[',
-            \ 'sexp_square_tail_wrap_list':     '<LocalLeader>]',
-            \ 'sexp_curly_head_wrap_list':      '<LocalLeader>{',
-            \ 'sexp_curly_tail_wrap_list':      '<LocalLeader>}',
-            \ 'sexp_round_head_wrap_element':   '<LocalLeader>w',
-            \ 'sexp_round_tail_wrap_element':   '<LocalLeader>W',
-            \ 'sexp_square_head_wrap_element':  '<LocalLeader>e[',
-            \ 'sexp_square_tail_wrap_element':  '<LocalLeader>e]',
-            \ 'sexp_curly_head_wrap_element':   '<LocalLeader>e{',
-            \ 'sexp_curly_tail_wrap_element':   '<LocalLeader>e}',
-            \ 'sexp_insert_at_list_head':       '<LocalLeader>h',
-            \ 'sexp_insert_at_list_tail':       '<LocalLeader>l',
-            \ 'sexp_splice_list':               '<LocalLeader>@',
-            \ 'sexp_convolute':                 '<LocalLeader>?',
-            \ 'sexp_raise_list':                '<LocalLeader>o',
-            \ 'sexp_raise_element':             '<LocalLeader>O',
-            \ 'sexp_swap_list_backward':        '<M-k>',
-            \ 'sexp_swap_list_forward':         '<M-j>',
-            \ 'sexp_swap_element_backward':     '<M-h>',
-            \ 'sexp_swap_element_forward':      '<M-l>',
-            \ 'sexp_emit_head_element':         '<M-S-j>',
-            \ 'sexp_emit_tail_element':         '<M-S-k>',
-            \ 'sexp_capture_prev_element':      '<M-S-h>',
-            \ 'sexp_capture_next_element':      '<M-S-l>',
-            \ }
 <
 To unbind a mapping, keep the key in the dictionary with an empty string
 as the value. For example, if you wanted to avoid shadowing vim's sentence
 motions:
 >
-        let g:sexp_mappings = {
-            \ 'sexp_outer_string':              'aS',
-            \ 'sexp_inner_string':              'iS',
-            \ 'sexp_move_to_prev_bracket':      '',
-            \ 'sexp_move_to_next_bracket':      '',
-            \ }
+        mappings {
+            "sexp_outer_string"             "aS"
+            "sexp_inner_string"             "iS"
+            "sexp_move_to_prev_bracket"     ""
+            "sexp_move_to_next_bracket"     ""
+        }
 <
 This would remap the string object selection mappings and remove the adjacent
 bracket object motion mappings altogether.
@@ -646,14 +638,13 @@ accurate and relatively quick, so it is the default setting.
 ==============================================================================
 IV. EXPLICIT MAPPINGS                                 *sexp-explicit-mappings*
 
-If you find managing your mappings via |g:sexp_mappings| awkward, you may wish
+If you find managing your mappings via |mappings| awkward, you may wish
 to opt for a more explicit mapping configuration instead.
 
-First, disable the provided mapping system by setting |g:sexp_filetypes| to an
+First, disable the provided mapping system by setting |filetypes| to an
 empty string:
 >
-        " Disable mapping hooks
-        let g:sexp_filetypes = ''
+        filetypes = " "" "
 <
 Next, write a function that will create your desired |:map-local| bindings.
 The following example includes every default mapping in vim-sexp. You can
@@ -775,6 +766,11 @@ in the filetypes of your choosing.
 <
 ==============================================================================
 V. CHANGELOG                                                  *sexp-changelog*
+
+18 April 2023
+        - Move command and mapping generation to fennel
+        - Move (most) config to be passed through to |setup()|
+        - Update docs
 
 03 March 2015
         - Add documentation on how to opt-out of g:sexp_mappings and manually
