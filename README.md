@@ -190,10 +190,10 @@ imbalance is not prevented, except in the limited case of `<BS>` below.
 * `<BS>` deletes an adjacent pair of `()`, `[]`, `{}`, and `""` when deleting
   the opening bracket or quote. Normal backspace otherwise.
 
-These insert mode mappings can be disabled with:
+These insert mode mappings can be disabled in setup opts with:
 
 ```vim
-let g:sexp_enable_insert_mode_mappings = 0
+enable_insert_mode_mappings = false
 ```
 
 [paredit.el]: http://www.emacswiki.org/emacs/ParEdit

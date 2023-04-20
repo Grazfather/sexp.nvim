@@ -189,9 +189,7 @@
 
   ; Because we use vimscript commands and want them to read variables, we set
   ; them in a global
-  (if options.insert_after_wrap
-    (tset vim.g "sexp_insert_after_wrap" 1)
-    (tset vim.g "sexp_insert_after_wrap" 0))
+  (tset vim.g "sexp_insert_after_wrap" (if options.insert_after_wrap 1 0))
 
   (tset vim.g "sexp_maxlines" options.maxlines)
 

@@ -94,11 +94,13 @@ local function create_autocmd()
 end
 local function setup(opts)
   options = vim.tbl_deep_extend("force", {}, defaults, opts)
+  local _7_
   if options.insert_after_wrap then
-    vim.g["sexp_insert_after_wrap"] = 1
+    _7_ = 1
   else
-    vim.g["sexp_insert_after_wrap"] = 0
+    _7_ = 0
   end
+  vim.g["sexp_insert_after_wrap"] = _7_
   vim.g["sexp_maxlines"] = options.maxlines
   create_autocmd()
   defplug100("x", "sexp_outer_list", "sexp#docount(b:sexp_count, 'sexp#select_current_list', 'v', 0, 1)")
