@@ -97,8 +97,9 @@ An ELEMENT always includes any leading MACRO CHARACTERS.
 
 ## Mappings
 
-All default mappings can be changed via the `g:sexp_mappings` variable. Every
-mapping is available as a `<Plug>` mapping, which may be used for any purpose.
+All default mappings can be changed via the `mappings` table in `opts` passed
+when you call `setup`. Every mapping is available as a `<Plug>` mapping, which
+may be used for any purpose.
 
 Users who desire more explicit, opt-in configuration should refer to
 `:help sexp-explicit-mappings`.
@@ -137,8 +138,8 @@ operator-pending mode.
 Wrap commands wrap the current COMPOUND FORM, ELEMENT, or visual selection and
 place the cursor at the head or tail of the newly created COMPOUND FORM.
 
-If `g:sexp_insert_after_wrap` is set (true by default), insert mode is entered
-after wrapping.
+If `insert_after_wrap` is set (true by default), insert mode is entered after
+wrapping.
 
 * `<LocalLeader>i` and `<LocalLeader>I` wrap the current COMPOUND FORM with `(` and `)`.
 * `<LocalLeader>[` and `<LocalLeader>]` wrap the current COMPOUND FORM with `[` and `]`.
