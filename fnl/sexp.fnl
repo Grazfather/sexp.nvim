@@ -73,6 +73,7 @@
 (local defaults {:enable_insert_mode_mappings true
                  :insert_after_wrap true
                  :filetypes "clojure,scheme,lisp,timl,fennel"
+                 :maxlines -1
                  :mappings mappings})
 
 (fn imapexpr [lhs rhs]
@@ -192,6 +193,7 @@
     (tset vim.g "sexp_insert_after_wrap" 1)
     (tset vim.g "sexp_insert_after_wrap" 0))
 
+  (tset vim.g "sexp_maxlines" options.maxlines)
 
   (create-autocmd)
 

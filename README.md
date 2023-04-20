@@ -48,9 +48,9 @@ require("lazy").setup({
 use {
   "Grazfather/sexp.nvim",
   config = function()
-    require("sexp").setup {
+    require("sexp").setup({
       -- Your config goes here, or just leave empty to use default settings
-    }
+    })
   end
 }
 ```
@@ -65,6 +65,7 @@ vim-sexp. I've exposed the following options:
   enable_insert_mode_mappings = true,
   insert_after_wrap = true,
   filetypes = "clojure,scheme,lisp,timl,fennel",
+  maxlines = -1,
   mappings = {}, -- See below
 }
 ```

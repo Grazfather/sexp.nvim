@@ -89,7 +89,7 @@ iF                                               *<Plug>(sexp_inner_top_list)*
 
         Does not include surrounding whitespace.
 
-        If |g:sexp_maxlines| is -1 (the default), the top-level list is
+        If |maxlines| is -1 (the default), the top-level list is
         determined to be the first parent list with a opening bracket
         on the first column. This is typically much faster than calling
         |searchpairpos()| recursively.
@@ -179,7 +179,7 @@ g<M-e>                                *<Plug>(sexp_move_to_prev_element_tail)*
 ]]                                     *<Plug>(sexp_move_to_next_top_element)*
         [count] top-level elements backward or forward, |exclusive|.
 
-        If |g:sexp_maxlines| is -1 (the default) and the current element is
+        If |maxlines| is -1 (the default) and the current element is
         in a list, the top-level element is determined to be the first parent
         list with a opening bracket on the first column. This is typically
         much faster than calling |searchpairpos()| recursively.
@@ -613,28 +613,27 @@ motions:
 This would remap the string object selection mappings and remove the adjacent
 bracket object motion mappings altogether.
 
-                                                             *g:sexp_maxlines*
+                                                             *sexp-maxlines*
 Searching for paired brackets is accomplished with the |searchpairpos()|
 function, and it is invoked quite often in this plugin.
 
-If g:sexp_maxlines is 0 or -1, |searchpairpos()| scans the entire buffer for
-its match, which can be slow if the nearest bracket is far from the cursor.
-If g:sexp_maxlines is positive, the scan is limited to this number of lines,
-trading accuracy for performance.
+If |maxlines| is 0 or -1, |searchpairpos()| scans the entire buffer for its
+match, which can be slow if the nearest bracket is far from the cursor. If
+|maxlines| is positive, the scan is limited to this number of lines, trading
+accuracy for performance.
 
 If searching for a top-level compound form via |<Plug>(sexp_outer_top_list)|
-or |<Plug>(sexp_move_to_prev_top_element)| with g:sexp_maxlines equal to 0,
+or |<Plug>(sexp_move_to_prev_top_element)| with |maxlines| equal to 0,
 |searchpairpos()| will be run recursively until the whole buffer is scanned
 for possible unpaired brackets. In moderately large buffers, this is an
-extremely slow operation. Setting g:sexp_maxlines to about 100 removes this
-speed penalty, but the accuracy often suffers noticeably.
+extremely slow operation. Setting |maxlines| to about 100 removes this speed
+penalty, but the accuracy often suffers noticeably.
 
-If g:sexp_maxlines is set to -1, top-level bracket searches stop when a
-bracket is found in the first column. For most Lisp buffers, this is both
-accurate and relatively quick, so it is the default setting.
+If |maxlines| is set to -1, top-level bracket searches stop when a bracket is
+found in the first column. For most Lisp buffers, this is both accurate and
+relatively quick, so it is the default setting.
 >
-        " Default
-        let g:sexp_maxlines = -1
+        maxlines = -1
 <
 ==============================================================================
 IV. EXPLICIT MAPPINGS                                 *sexp-explicit-mappings*
